@@ -12,6 +12,8 @@ jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
+    env:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
     steps:
       - name: Checkout repository
@@ -23,14 +25,14 @@ jobs:
           terraform_version: 1.5.7
 
       - name: Configure kubeconfig (from secret)
-        if: ${{ secrets.KUBE_CONFIG != '' }}
+        if: env.KUBE_CONFIG != ''
         run: |
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+          echo "$KUBE_CONFIG" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Set up local KIND cluster (if no kubeconfig provided)
-        if: ${{ secrets.KUBE_CONFIG == '' }}
+        if: env.KUBE_CONFIG == ''
         uses: engineerd/setup-kind@v0.7.0
         with:
           version: v0.17.0
