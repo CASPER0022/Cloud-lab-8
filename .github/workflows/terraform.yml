@@ -31,17 +31,17 @@ jobs:
           echo "$KUBE_CONFIG" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Set up local KIND cluster (if no kubeconfig provided)
+      - name: Install kind (if no kubeconfig provided)
         if: env.KUBE_CONFIG == ''
-        uses: engineerd/setup-kind@v0.11.0
-        with:
-          version: v0.17.0
-          nodes: 1
-          config: |
-            kind: Cluster
-            apiVersion: kind.x-k8s.io/v1alpha4
-            nodes:
-              - role: control-plane
+        run: |
+          curl -Lo kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/
+
+      - name: Create local kind cluster (if no kubeconfig provided)
+        if: env.KUBE_CONFIG == ''
+        run: |
+          kind create cluster --name terraform-ci
 
       - name: Terraform Format
         run: terraform fmt -check
